@@ -1,0 +1,8 @@
+version: '3.1'
+services:
+  site:
+       volumes:
+         - ./app/:/var/www/html
+       build: .
+       ports:
+         - '8000:80'
