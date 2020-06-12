@@ -45,7 +45,18 @@ error_reporting (E_ALL); // DEBUG
 ob_start ();
 
 // Load configuration file
-require_once ('tequila_config.inc.php');
+// require_once ('tequila_config.inc.php');
+$aConfig = array (
+	          'sServer'   => 'https://tequila.epfl.ch',
+	          'iTimeout'  => 86400,
+			      'logoutUrl' => "https://localhost/tequila/logout.php",
+	);
+
+
+/********************************************************
+          DO NOT EDIT UNDER THIS LINE
+********************************************************/
+
 
 // PHP 4.3.0
 if (!function_exists ('file_get_contents')) {
@@ -104,6 +115,7 @@ define('MIN_SESSION_TIMEOUT', 600);
 define('SESSION_NAME', 'TEQUILA');
 
 class TequilaClient {
+  
   var $aLanguages = array (
 			   LNG_ENGLISH => 'english',
 			    LNG_FRENCH => 'francais',
@@ -231,18 +243,18 @@ class TequilaClient {
     }
 
     /* Initializations. If no parameter given, get info from config file */
-    if (empty ($sServer)) $sServer    = GetConfigOption ('sServer');
-    if (empty ($sServer)) $sServerUrl = GetConfigOption ('sServerUrl');
+    if (empty ($sServer)) $sServer    = self::GetConfigOption ('sServer');
+    if (empty ($sServer)) $sServerUrl = self::GetConfigOption ('sServerUrl');
     
     $aEtcConfig = $this->LoadEtcConfig ();
 
     if (empty ($sServer))    $sServer    = $aEtcConfig ['sServer'];
-    if (empty ($sServerUrl)) $sServerUrl = $aEtcConfig ['sServerUrl'];    
+    if (empty ($sServerUrl)) $sServerUrl = $aEtcConfig ['sServerUrl'];
 
     if (empty ($sServerUrl) && !empty ($sServer))
       $sServerUrl = $sServer . '/cgi-bin/tequila';
-    if (empty ($iTimeout))  $iTimeout  = GetConfigOption ('iTimeout', 86400);
-    if (empty ($logoutUrl)) $logoutUrl = GetConfigOption ('logoutUrl');
+    if (empty ($iTimeout))  $iTimeout  = self::GetConfigOption ('iTimeout', 86400);
+    if (empty ($logoutUrl)) $logoutUrl = self::GetConfigOption ('logoutUrl');
 
     $this->sServer     = $sServer;
     $this->sServerUrl  = $sServerUrl;
@@ -250,6 +262,14 @@ class TequilaClient {
     $this->logoutUrl   = $logoutUrl;
     $this->iCookieLife = COOKIE_LIFE;
     $this->sCookieName = COOKIE_NAME;
+  }
+
+  function GetConfigOption($sOption, $sDefault = '') {
+    global $aConfig;
+    if (!array_key_exists ($sOption, $aConfig))
+      return ($sDefault);
+    else
+      return ($aConfig [$sOption]);
   }
 
    /*====================== ERROR MANAGEMENT 
