@@ -6,7 +6,7 @@ $oClient = new TequilaClient();
 $oClient->SetApplicationName('Les élèves vont à l\'école');
 $oClient->SetWantedAttributes(array('uniqueid','name','firstname','unit', 'unitid', 'where', 'group'));
 $oClient->SetWishedAttributes(array('email', 'title'));
-#$oClient->SetApplicationURL('https://localhost/tequila/test.php');
+$oClient->SetApplicationURL('https://localhost:8000/test.php');
 #$oClient->SetCustomFilter('org=EPFL&firstname=John&unit=SC-PME&where=SC-PME/SC-S/ETU/EPFL/CH&group=inbc');
 $oClient->SetCustomParamaters(array ('toto' => 1));
 
