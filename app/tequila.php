@@ -4,7 +4,7 @@
 	PHP client for Tequila, v. 2.0.4 (Tue Nov 14 10:47:18 CET 2006)
 	(C) 2004, Lionel Clavien [lionel dot clavien AT epfl dot ch]
 	This code is released under the GNU GPL v2 terms (see LICENCE file).
-	
+
 	Changelog:
 		0.1.0, 2004-06-27: Creation
 		0.1.1, 2004-08-29: Changed RSA authentication method to use the new
@@ -22,19 +22,19 @@
 			Fix session time out
 			use PHP sessions
 			hide key attribute in urlaccess.
-		    
+
 		3.0.1 : Fix INFO_PATH & QUERY_STRING test.
 		3.0.2 : 2011-08-05 : Include comments from Lucien Chaboudez
 			Define MIN_SESSION_TIMEOUT
 			Delete cookie with explicit root path
-		
+
 		3.0.3 : 2012-04-12 : Patch from Lucien Chaboudez
                         LoadSession :Check if all the wanted attributes are present
                                      in the $_SESSION.
 
 	TODO:
 		- implement more documented features (allows, ?)
-		
+
 ========================================================================*/
 
 // Disable PHP error reporting
@@ -209,13 +209,13 @@ class TequilaClient {
   var           $sKeyFile = '';
   var      $bReportErrors = TRUE;
   var $stderr;
-  
+
   var $logoutUrl;
 
   var $requestInfos = array();
 
   /*====================== Constructor
-    GOAL : Class constructor   
+    GOAL : Class constructor
     NOTE : All parameters are optional. They are present in the config
            file tequila_config.inc.php
      IN  : $sServerURL          -> (optional) Tequila server address (ie : https://tequila.epfl.ch/cgi-bin/tequila)
@@ -233,11 +233,13 @@ class TequilaClient {
     /* Initializations. If no parameter given, get info from config file */
     if (empty ($sServer)) $sServer    = GetConfigOption ('sServer');
     if (empty ($sServer)) $sServerUrl = GetConfigOption ('sServerUrl');
-    
+
     $aEtcConfig = $this->LoadEtcConfig ();
 
-    if (empty ($sServer))    $sServer    = $aEtcConfig ['sServer'];
-    if (empty ($sServerUrl)) $sServerUrl = $aEtcConfig ['sServerUrl'];    
+    if ($aEtcConfig !== false){
+        $sServer    = $aEtcConfig ['sServer'];
+        $sServerUrl = $aEtcConfig ['sServerUrl'];
+    }
 
     if (empty ($sServerUrl) && !empty ($sServer))
       $sServerUrl = $sServer . '/cgi-bin/tequila';
@@ -252,8 +254,8 @@ class TequilaClient {
     $this->sCookieName = COOKIE_NAME;
   }
 
-   /*====================== ERROR MANAGEMENT 
-    GOAL : Manage errors     
+   /*====================== ERROR MANAGEMENT
+    GOAL : Manage errors
       IN : $iError  -> the number representing the error
    */
   function Error ($iError) {
@@ -279,8 +281,8 @@ class TequilaClient {
     return ($iError);
   }
 
-   /*======================  
-     GOAL : Set if you want display the errors or not      
+   /*======================
+     GOAL : Set if you want display the errors or not
       IN  : $bReportErrors -> (TRUE|FALSE)
    */
   function SetReportErrors ($bReportErrors) {
@@ -296,7 +298,7 @@ class TequilaClient {
     $sFile = '/etc/tequila.conf';
     if (!file_exists ($sFile)) return false;
     if (!is_readable ($sFile)) return false;
-    
+
     $aConfig = array ();
     $sConfig = trim (file_get_contents ($sFile));
     $aLine = explode ("\n", $sConfig);
@@ -309,7 +311,7 @@ class TequilaClient {
     }
     return $aConfig;
   }
-  
+
   /*====================== Custom parameters
     GOAL : Set the custom parameters
      IN  : $customParameters -> an array containing the parameters. The
@@ -325,8 +327,8 @@ class TequilaClient {
   function GetCustomParamaters () {
     return $this->requestInfos;
   }
-	
-  /*********************** WANTED RIGHTS ***************************	
+
+  /*********************** WANTED RIGHTS ***************************
    ====================== Required rights ("wantright" parameter)
    GOAL : set the wanted rights
     IN  : $aWantedRights -> an array with the rights
@@ -337,9 +339,9 @@ class TequilaClient {
 
   /*
     GOAL : Add a wanted right. The wanted right must be an array. It
-	         will be merged we the array containing the wanted rights.	   
+	         will be merged we the array containing the wanted rights.
     IN   : $aRightsToAdd   -> an array containing the wanted rights to add
-  */	
+  */
   function AddWantedRights ($aWantedRights) {
     $this->aWantedRights = array_merge ($this->aWantedRights, $aWantedRights);
   }
@@ -359,7 +361,7 @@ class TequilaClient {
     return ($this->aWantedRights);
   }
 
-  /************************ WANTED ROLES ***************************   
+  /************************ WANTED ROLES ***************************
   ====================== Required roles ("wantrole" parameter)
   GOAL : Set the wanted Roles
     IN  : $aWantedRoles  -> an array with the wanted roles
@@ -371,13 +373,13 @@ class TequilaClient {
   /*
    GOAL : Add some wanted roles to the current roles
      IN  : $aRolesToAdd   -> an array with the roles to add.
-  */	
+  */
   function AddWantedRoles ($aWantedRoles) {
     $this->aWantedRoles = array_merge ($this->aWantedRoles, $aWantedRoles);
   }
 
   /*
-    GOAL : Remove some wanted roles from the list      
+    GOAL : Remove some wanted roles from the list
      IN  : $aRolesToRemove   -> an array with the roles to remove
   */
   function RemoveWantedRoles ($aWantedRoles) {
@@ -393,7 +395,7 @@ class TequilaClient {
 
   /********************* REQUIRED ATTRIBUTES ***********************
     ====================== Required attributes ("request" parameter)
-    GOAL : Set the wanted attributes 
+    GOAL : Set the wanted attributes
      IN  : $aWantedAttributes   -> an array containing the wanted attributes
   */
   function SetWantedAttributes ($aWantedAttributes) {
@@ -401,9 +403,9 @@ class TequilaClient {
   }
 
   /*
-    GOAL : Add some wanted attributes to the list      
+    GOAL : Add some wanted attributes to the list
      IN  : $aAttributesToAdd -> an array with the attributes to add
-  */  
+  */
   function AddWantedAttributes ($aWantedAttributes) {
     $this->aWantedAttributes = array_merge ($this->aWantedAttributes,
 					    $aWantedAttributes);
@@ -412,7 +414,7 @@ class TequilaClient {
   /*
     GOAL : Remove some wanted attributes from the list
      IN  : $aAttributesToRemove -> an array containing the attributes to remove
-  */  
+  */
   function RemoveWantedAttributes ($aWantedAttributes) {
     foreach ($this->aWantedAttributes as $sWantedAttribute)
       if (in_array($sWantedAttribute, $aWantedAttributes))
@@ -424,7 +426,7 @@ class TequilaClient {
   function GetWantedAttributes () {
     return ($this->aWantedAttributes);
   }
-  
+
   /********************** WISHED ATTRIBUTES ************************
    ====================== Desired attributes ("wish" parameter)
    GOAL : Set the wished attributes
@@ -437,7 +439,7 @@ class TequilaClient {
   /*
     GOAL : Add some wished attributes to the list
       IN : $aAttributesToAdd  -> an array containing the attributes to add
-  */   
+  */
   function AddWishedAttributes ($aWishedAttributes) {
     $this->aWishedAttributes = array_merge ($this->aWishedAttributes,
 					    $aWishedAttributes);
@@ -446,7 +448,7 @@ class TequilaClient {
   /*
     GOAL : Remove some wished attributes fromme the list
      IN  : $aAttributesToRemove -> an array with the attributes to remove
-  */  
+  */
   function RemoveWishedAttributes ($aWishedAttributes) {
     foreach ($this->aWishedAttributes as $aWishedAttribute)
       if (in_array($aWishedAttribute, $aWishedAttributes))
@@ -454,14 +456,14 @@ class TequilaClient {
 	  $this->aWishedAttributes)]);
   }
 
-  /* GOAL : Returns the array containing the wished attributes */  
+  /* GOAL : Returns the array containing the wished attributes */
   function GetWishedAttributes () {
     return ($this->aWishedAttributes);
   }
-  
+
   /************************ WANTED GROUPS **************************
     ====================== Required groups ("belongs" parameter)
-    GOAL : Set the wanted groups 
+    GOAL : Set the wanted groups
      IN  : $aWantedGroups -> an array containing the groups
   */
   function SetWantedGroups ($aWantedGroups) {
@@ -471,7 +473,7 @@ class TequilaClient {
   /*
     GOAL : Add some wanted groups to the list
      IN  : $aGroupsToAdd  -> an array containing the groups to add
-  */  
+  */
   function AddWantedGroups ($aWantedGroups) {
     $this->aWantedGroups = array_merge($this->aWantedGroups, $aWantedGroups);
   }
@@ -479,7 +481,7 @@ class TequilaClient {
   /*
     GOAL : Remove some wanted groups from the list
      IN  : $aGroupsToRemove  -> an array containing the groups to remove
-  */  
+  */
   function RemoveWantedGroups ($aWantedGroups) {
     foreach ($this->aWantedGroups as $aWantedGroup)
       if (in_array($aWantedGroup, $aWantedGroups))
@@ -487,12 +489,12 @@ class TequilaClient {
 	  $this->aWantedGroups)]);
   }
 
-  /* GOAL : Returns the array containing the wanted groups */  
+  /* GOAL : Returns the array containing the wanted groups */
   function GetWantedGroups () {
     return ($this->aWantedGroups);
   }
-  
-  /************************* CUSTOM FILTER **************************   
+
+  /************************* CUSTOM FILTER **************************
     ====================== Own filter ("require" parameter)
     GOAL : Set the custom filter.
      IN  : $sCustomFilter -> a string containing the custom filter
@@ -501,11 +503,11 @@ class TequilaClient {
     $this->sCustomFilter = $sCustomFilter;
   }
 
-  /* GOAL : Returns the string containing the custom filter  */  
+  /* GOAL : Returns the string containing the custom filter  */
   function GetCustomFilter () {
     return ($this->sCustomFilter);
   }
-  
+
   /************************ ALLOWS FILTER **************************
     ====================== Allows filter ("allows" parameter)
     GOAL : Sets the allow filter
@@ -519,21 +521,21 @@ class TequilaClient {
   function GetAllowsFilter () {
     return ($this->sAllowsFilter);
   }
-  
+
   /********************* LANGUAGE INTERFACE *************************
     ====================== Interface language ("language" parameter)
     GOAL : Sets the current language
-     IN  : $sLanguage  -> the language : 'english' | 'francais'                           
+     IN  : $sLanguage  -> the language : 'english' | 'francais'
   */
   function SetLanguage ($sLanguage) {
     $this->iLanguage = $sLanguage;
   }
 
-  /* GOAL : Returns the current language */  
+  /* GOAL : Returns the current language */
   function GetLanguage () {
     return ($this->iLanguage);
   }
-  
+
   /*********************** APPLICATION URL **************************
     ====================== Application URL ("urlaccess" parameter)
     GOAL : Sets the application URL. This is the URL where to redirect
@@ -544,11 +546,11 @@ class TequilaClient {
     $this->sApplicationURL = $sApplicationURL;
   }
 
-  /* GOAL : Returns the application URL */  
+  /* GOAL : Returns the application URL */
   function GetApplicationURL () {
     return ($this->sApplicationURL);
   }
-  
+
   /********************** APPLICATION NAME *************************
     ====================== Application name ("service" parameter)
     GOAL : Set the application name. This will be displayed on the
@@ -559,50 +561,50 @@ class TequilaClient {
     $this->sApplicationName = $sApplicationName;
   }
 
-  /* GOAL : returns the application name */  
+  /* GOAL : returns the application name */
   function GetApplicationName () {
     return ($this->sApplicationName);
   }
-  
+
   /*********************** RESOURCE NAME ****************************
     GOAL : Set the resource name
-     IN  : $sResource -> string with the resource name   
+     IN  : $sResource -> string with the resource name
   */
   function SetResource ($sResource) {
     $this->sResource = $sResource;
   }
 
-  /* GOAL : Returns the resource name */  
+  /* GOAL : Returns the resource name */
   function GetResource () {
     return ($this->sResource);
   }
-  
+
   /*********************** SESSION KEY ******************************
     GOAL : Set the session key
-     IN  : $sKey -> string with the session key   
+     IN  : $sKey -> string with the session key
   */
   function SetKey ($sKey) {
     $this->sKey = $sKey;
   }
 
-  /* GOAL : Returns the session key */  
+  /* GOAL : Returns the session key */
   function GetKey () {
     return ($this->sKey);
   }
-  
+
   /*********************** SESSION MESSAGE **************************
     GOAL : Set the session message
-     IN  : $sMessage -> string with the session message   
+     IN  : $sMessage -> string with the session message
   */
   function SetMessage ($sMessage) {
     $this->sMessage = $sMessage;
   }
 
-  /* GOAL : Returns the session message */    
+  /* GOAL : Returns the session message */
   function GetMessage () {
     return ($this->sMessage);
   }
-  
+
   /************************ TEQUILA SERVER **************************
     ====================== server name
     GOAL : Set tequila server name (i.e https://tequila.epfl.ch)
@@ -612,11 +614,11 @@ class TequilaClient {
     $this->sServer = $sServer;
   }
 
-  /* GOAL : Returns Tequila server's name */  
+  /* GOAL : Returns Tequila server's name */
   function GetServer () {
     return ($this->sServer);
   }
-  
+
   /*====================== server URL
     GOAL : Set tequila server URL (ie https://tequila.epfl.ch/cgi-bin/tequila)
      IN  : $sURL -> the url
@@ -625,20 +627,20 @@ class TequilaClient {
     $this->sServerUrl = $sURL;
   }
 
-  /* GOAL : Returns Tequila server's url */    
+  /* GOAL : Returns Tequila server's url */
   function GetServerURL () {
     return ($this->sServerUrl);
   }
-  
+
   //====================== Session manager parameters
   function SetTimeout ($iTimeout) {
     $this->iTimeout = $iTimeout;
   }
-  
+
   function GetTimeout () {
     return ($this->iTimeout);
   }
-  
+
   /************************ COOKIE PARAMETERS *********************
     GOAL : Set the cookie parameters. Very useful if you have page on your
            website that have different access rights than the other pages.
@@ -663,17 +665,17 @@ class TequilaClient {
      IN  : $attributes  -> an array containing the attributes returned
            by the tequila server.
   */
-  function CreateSession ($attributes) {  
+  function CreateSession ($attributes) {
     if (!$attributes) return (FALSE);
     foreach ($attributes as $key => $val) {
       $this->aAttributes [$key] = $val;
-      $_SESSION[SESSION_NAME][$key] = $val;	
+      $_SESSION[SESSION_NAME][$key] = $val;
     }
     $_SESSION[SESSION_NAME]['creation'] = time ();
     return (TRUE);
   }
 
-  /* GOAL : Load or update a PHP session */	
+  /* GOAL : Load or update a PHP session */
   function LoadSession () {
     if (!isset ($_SESSION[SESSION_NAME]['user'])) return (FALSE);
 
@@ -707,7 +709,7 @@ class TequilaClient {
   function GetAttributes() {
     return ($this->aAttributes);
   }
-  
+
   /* GOAL : To know if the user's attributes are present or not.
      @in  :	Array containing wanted attributes as keys
      @out :	The same array with TRUE or FALSE as value for the
@@ -721,7 +723,7 @@ class TequilaClient {
 	$aAttributes [$sAttribute] = FALSE;
   }
 
-  /* GOAL : Launch the user authentication */  
+  /* GOAL : Launch the user authentication */
   function Authenticate () {
     session_start ();
     if ($this->LoadSession ()) return (TRUE);
@@ -734,12 +736,12 @@ class TequilaClient {
       }
     }
     $this->createRequest ();
-    setcookie ($this->sCookieName, $this->sKey);	  
+    setcookie ($this->sCookieName, $this->sKey);
     $url = $this->getAuthenticationUrl ();
     header ('Location: ' . $url);
     exit;
   }
-  
+
   /*
       GOAL : Sends an authentication request to Tequila
   */
@@ -759,7 +761,7 @@ class TequilaClient {
         $urlaccess .= '?' . $_SERVER['QUERY_STRING'];
       }
     }
-    
+
     /* Request creation */
     $this->requestInfos ['urlaccess'] = $urlaccess;
 
@@ -769,7 +771,7 @@ class TequilaClient {
       $this->requestInfos ['wantright'] = implode($this->aWantedRights, '+');
     if (!empty ($this->aWantedRoles))
       $this->requestInfos ['wantrole'] =  implode($this->aWantedRoles, '+');
-    if (!empty ($this->aWantedAttributes)) 
+    if (!empty ($this->aWantedAttributes))
       $this->requestInfos ['request'] = implode ($this->aWantedAttributes, '+');
     if (!empty ($this->aWishedAttributes))
       $this->requestInfos ['wish'] = implode ($this->aWishedAttributes, '+');
@@ -781,11 +783,11 @@ class TequilaClient {
       $this->requestInfos ['allows'] = $this->sAllowsFilter;
     if (!empty ($this->iLanguage))
       $this->requestInfos ['language'] = $this->aLanguages [$this->iLanguage];
-	  
-    $this->requestInfos ['dontappendkey'] = "1"; 
+
+    $this->requestInfos ['dontappendkey'] = "1";
 
     ob_end_clean();
-	
+
     /* Asking tequila */
     $response = $this->askTequila ('createrequest', $this->requestInfos);
     $this->sKey = substr (trim ($response), 4); // 4 = strlen ('key=')
@@ -808,11 +810,11 @@ class TequilaClient {
 
     $result = array ();
     $attributes = explode ("\n", $response);
-    
+
     /* Saving returned attributes */
     foreach ($attributes as $attribute) {
       $attribute = trim ($attribute);
-      if (!$attribute)  continue;	  
+      if (!$attribute)  continue;
       list ($key, $val) = explode ('=', $attribute,2);
       //if ($key ==  'key') { $this->key  = $val; }
       //if ($key ==  'org') { $this->org  = $val; }
@@ -831,7 +833,7 @@ class TequilaClient {
   function getValue ($key = ''){
     if (isset ($_SESSION[SESSION_NAME][$key])) return $_SESSION[SESSION_NAME][$key];
   }
-  
+
   /*GOAL : Gets tequila server config infos */
   function getConfig () {
     return $this->askTequila ('config');
@@ -843,16 +845,16 @@ class TequilaClient {
   function getAuthenticationUrl () {
 	//return sprintf('%s/requestauth?requestkey=%s',
 	//	   $this->sServerUrl,
-	//	   $this->sKey);    
+	//	   $this->sKey);
 	return sprintf('%s/requestauth?requestkey=%s',
 		$this->sServerUrl,
-		$this->sKey);    	   
+		$this->sKey);
   }
 
   /*
     GOAL : Returns the logout URL
       IN : $redirectUrl -> (optional) the url to redirect to when logout is done
-  */  
+  */
   function getLogoutUrl ($redirectUrl = '') {
     $url = sprintf('%s/logout', $this->sServerUrl);
     if (!empty($redirectUrl)) {
@@ -871,7 +873,7 @@ class TequilaClient {
   }
 
   /*
-    GOAL : Destroy session cookie 
+    GOAL : Destroy session cookie
   */
   function KillSessionCookie() {
     // Delete cookie by setting expiration time in the past with root path
@@ -879,7 +881,7 @@ class TequilaClient {
   }
 
   /*
-    GOAL : terminate a session 
+    GOAL : terminate a session
   */
   function KillSession() {
     $this->KillSessionFile();
@@ -901,11 +903,11 @@ class TequilaClient {
      IN  : $type    -> the type of contact to have with tequila
       N  : $fields  -> an array with the information for the request
                        to Tequila server
-  */  
+  */
   function askTequila ($type, $fields = array()) {
   //Use the CURL object in order to communicate with tequila.epfl.ch
     $ch = curl_init ();
-    
+
     curl_setopt ($ch, CURLOPT_HEADER,         false);
     curl_setopt ($ch, CURLOPT_POST,           true);
     curl_setopt ($ch, CURLOPT_RETURNTRANSFER, true);
@@ -921,23 +923,23 @@ class TequilaClient {
       case 'createrequest':
 	$url .= '/createrequest';
 	break;
-	
+
       case 'fetchattributes':
 	$url .= '/fetchattributes';
 	break;
-	
+
       case 'config':
 	$url .= '/getconfig';
 	break;
-	
+
       case 'logout':
 	$url .= '/logout';
 	break;
-	
+
       default:
 	return;
     }
-    // $url contains the tequila server with the parameters to execute 
+    // $url contains the tequila server with the parameters to execute
     curl_setopt ($ch, CURLOPT_URL, $url);
 
     /* If fields where passed as parameters, */
@@ -948,7 +950,7 @@ class TequilaClient {
       }
       $query = implode("\n", $pFields) . "\n";
       curl_setopt ($ch, CURLOPT_POSTFIELDS, $query);
-    }    
+    }
     $response = curl_exec ($ch);
     // If connexion failed (HTTP code 200 <=> OK)
     if (curl_getinfo ($ch, CURLINFO_HTTP_CODE) != '200') {
